@@ -27,6 +27,7 @@ L.context._session.cookies.set_cookie(cookie)
 L.context._session.headers.update({
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
 })
+print("Logged user:", L.test_login())
 
 
 def send_photo(path, caption):
