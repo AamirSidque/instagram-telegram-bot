@@ -1,18 +1,16 @@
-name: Instagram Actress Scraper
+name: Bollywood Actress Bot
 
 on:
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "0 */3 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
-
 jobs:
   run:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
 
@@ -21,18 +19,20 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           pip install instaloader requests
 
-      - name: Run Bot
+      - name: Run Bollywood Bot
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
+          IG_SESSIONID: ${{ secrets.IG_SESSIONID }}
         run: |
+          cd bollywood
           python bot.py
 
-      - name: Save posted database
+      - name: Save state & posted
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Update posted.json"
+          commit_message: "Update Bollywood State"
