@@ -6,33 +6,41 @@ import glob
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
+SESSIONID = os.getenv("IG_SESSIONID")
 
-L = instaloader.Instaloader(save_metadata=False, download_comments=False)
+L = instaloader.Instaloader(
+    save_metadata=False,
+    download_comments=False,
+    post_metadata_txt_pattern=""
+)
+
+# login bypass block
+L.context._session.cookies.set("sessionid", SESSIONID)
+L.context._session.headers.update({
+    "User-Agent": "Mozilla/5.0"
+})
 
 def send_photo(path, caption):
     url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
     files = {'photo': open(path, 'rb')}
     data = {'chat_id': CHAT_ID, 'caption': caption}
-    r = requests.post(url, data=data, files=files)
-    print("PHOTO RESPONSE:", r.text)
+    print(requests.post(url, data=data, files=files).text)
 
 def send_video(path, caption):
     url = f"https://api.telegram.org/bot{TOKEN}/sendVideo"
     files = {'video': open(path, 'rb')}
     data = {'chat_id': CHAT_ID, 'caption': caption}
-    r = requests.post(url, data=data, files=files)
-    print("VIDEO RESPONSE:", r.text)
+    print(requests.post(url, data=data, files=files).text)
 
-# Load actress list
-with open("actresses.txt", "r") as f:
+# Load actresses list
+with open("actresses.txt") as f:
     actresses = [a.strip() for a in f.readlines() if a.strip()]
 
-# Load posted memory
+# Load posted
 posted = {}
 if os.path.exists("posted.json"):
     posted = json.load(open("posted.json"))
 
-# Ensure media folder exists
 if not os.path.exists("media"):
     os.mkdir("media")
 
@@ -42,34 +50,28 @@ for username in actresses:
         post = next(profile.get_posts())
         shortcode = post.shortcode
 
-        # skip if already processed
         if posted.get(username) == shortcode:
             print("Already posted:", username)
             continue
 
-        caption = post.caption if post.caption else f"Update from {username}"
+        caption = post.caption or f"Update from {username}"
 
-        # clear previous downloads
+        # clear old
         for f in glob.glob("media/*"):
             os.remove(f)
 
-        # download new post
         L.download_post(post, target="media")
 
-        # find downloaded file
-        media_files = glob.glob(f"media/*{shortcode}*")
+        media_files = [
+            f for f in glob.glob("media/*")
+            if shortcode in f and (f.endswith(".mp4") or f.endswith(".jpg"))
+        ]
 
         if not media_files:
             print("No media found for", username)
             continue
 
-        media_file = [m for m in media_files if m.endswith(".mp4") or m.endswith(".jpg")]
-
-        if not media_file:
-            print("Valid media not found", username)
-            continue
-
-        media_file = media_file[0]
+        media_file = media_files[0]
 
         if media_file.endswith(".mp4"):
             send_video(media_file, caption)
