@@ -4,6 +4,8 @@ import os
 import requests
 import glob
 from requests.cookies import create_cookie
+from datetime import datetime
+
 
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
@@ -61,7 +63,19 @@ for username in actresses:
             print("Already posted:", username)
             continue
 
-        caption = post.caption or f"Update from {username}"
+
+        actress_name = username.replace("_", " ").title()
+        
+        post_time = post.date_utc.strftime("%d %B %Y, %I:%M %p")
+        
+        raw_caption = post.caption if post.caption else "No caption available"
+        
+        caption = f"""
+        Actress: {actress_name}
+        Caption: {raw_caption[:500]}  # limit to avoid Telegram errors
+        Time: {post_time}
+        """.strip()
+
 
         # clear old
         for f in glob.glob("media/*"):
