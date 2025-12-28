@@ -5,6 +5,8 @@ import requests
 import glob
 from requests.cookies import create_cookie
 from datetime import datetime
+import time
+
 
 
 
@@ -55,6 +57,9 @@ if not os.path.exists("media"):
     os.mkdir("media")
 
 for username in actresses:
+
+    time.sleep(5)
+
     try:
         profile = instaloader.Profile.from_username(L.context, username)
         post = next(profile.get_posts())
