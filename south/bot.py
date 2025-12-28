@@ -6,17 +6,29 @@ import glob
 import requests
 from requests.cookies import create_cookie
 
+
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 SESSIONID = os.getenv("IG_SESSIONID")
 
-BATCH_SIZE = 25
+BATCH_SIZE = 10
 
 # ----- LOGIN -----
+
 L = instaloader.Instaloader(save_metadata=False, download_comments=False)
+
 cookie = create_cookie(name="sessionid", value=SESSIONID)
 L.context._session.cookies.set_cookie(cookie)
-L.context._session.headers.update({"User-Agent": "Mozilla/5.0"})
+
+# Optional but helps stability
+L.context._session.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+    "Referer": "https://www.instagram.com/",
+    "X-Requested-With": "XMLHttpRequest"
+})
+
+print("Logged user:", L.test_login())
+
 
 print("Logged user:", L.test_login())
 
