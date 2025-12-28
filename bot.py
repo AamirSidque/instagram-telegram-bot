@@ -64,14 +64,16 @@ for username in actresses:
 
         media_files = [
             f for f in glob.glob("media/*")
-            if shortcode in f and (f.endswith(".mp4") or f.endswith(".jpg"))
+            if f.endswith(".mp4") or f.endswith(".jpg")
         ]
-
+        
         if not media_files:
             print("No media found for", username)
             continue
+        
+        media_files.sort(key=os.path.getmtime)   # newest first
+        media_file = media_files[-1]
 
-        media_file = media_files[0]
 
         if media_file.endswith(".mp4"):
             send_video(media_file, caption)
