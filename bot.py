@@ -3,6 +3,8 @@ import json
 import os
 import requests
 import glob
+from requests.cookies import create_cookie
+
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
@@ -15,10 +17,15 @@ L = instaloader.Instaloader(
 )
 
 # login bypass block
-L.context._session.cookies.set("sessionid", SESSIONID)
+# ---- LOGIN USING SESSION ----
+
+cookie = create_cookie(name='sessionid', value=SESSIONID)
+L.context._session.cookies.set_cookie(cookie)
+
 L.context._session.headers.update({
-    "User-Agent": "Mozilla/5.0"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
 })
+
 
 def send_photo(path, caption):
     url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
